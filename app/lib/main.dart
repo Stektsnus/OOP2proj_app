@@ -1,4 +1,8 @@
 import "package:flutter/material.dart";
+import 'package:flutter/rendering.dart';
+import "package:http/http.dart" as http;
+
+int PORT = 3000; 
 
 void main() {
   runApp(const MyApp());
@@ -24,21 +28,14 @@ class MainView extends StatefulWidget {
 }
 
 class _MainViewState extends State<MainView> {
-  
+  bool loggednIn = false;
   int _selectedIndex = 0;
   static const TextStyle _optionStyle = 
     TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static List<Widget> _bodyOptions = <Widget>[
-    Container(
-      child: Column(
-        children: [
-          const Text(
-            "Index 0: Homeview",
-        )],
-      ),
-    ),
+  static final List<Widget> _bodyOptions = <Widget>[
+    
     const Text(
-      "Index 1: Mapview",
+      "Index 1: xD",
       style: _optionStyle,
     ),
     const Text(
@@ -66,8 +63,8 @@ class _MainViewState extends State<MainView> {
           ),
         ),
       ),
-      body: Center(
-        child: _bodyOptions.elementAt(_selectedIndex),
+      body: const Center(
+        child: CreateUserView()                         //_bodyOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -89,8 +86,188 @@ class _MainViewState extends State<MainView> {
         iconSize: 30,
         onTap: _onItemTapped,
         backgroundColor: Colors.black54,
-
       ), // TIPS: KLICKA CTRL + SPACE FÖR ALTERNATIV I WIDGETS
+    );
+  }
+}
+
+// NYI: Skapa ny vy för skapandet av en användare
+
+
+class LoginView extends StatelessWidget {
+  const LoginView({ Key? key }) : super(key: key);
+
+  void validateLogin() {
+    print("User validation success");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            "Login",
+            style: TextStyle(
+              fontSize: 30,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextFormField(
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: "Enter user name",
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextFormField(
+            obscureText: true,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: "Enter password",
+            ),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            TextButton(
+              onPressed: validateLogin,
+              child: const Text("Create new user", style: TextStyle(fontSize: 14, color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: validateLogin,
+              child: const Text("Login", style: TextStyle(fontSize: 18)),
+            )
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class CreateUserView extends StatefulWidget {
+  const CreateUserView({ Key? key }) : super(key: key);
+
+  @override
+  State<CreateUserView> createState() => _CreateUserViewState();
+}
+
+class _CreateUserViewState extends State<CreateUserView> {
+  bool hideFirstPassword = true;
+  bool hideSecondPassword = true;
+
+  // Controllers for the form
+  TextEditingController userNameController = TextEditingController();
+  TextEditingController firstPasswordController = TextEditingController();
+  TextEditingController secondPasswordController = TextEditingController();
+
+  void validateSubmission() {
+    print(userNameController.text);
+    print(firstPasswordController.text);
+    print(secondPasswordController.text);
+    // Hämta http-data
+  }
+
+  void toggleFirstPasswordVisibility(){
+    setState(() {
+      if (hideFirstPassword == false) {
+        hideFirstPassword = true;
+      }
+      else {
+        hideFirstPassword = false;
+      }
+    });
+  }
+
+  void toggleSecondPasswordVisibility(){
+    setState(() {
+      if (hideSecondPassword == false) {
+      hideSecondPassword = true;
+      }
+      else {
+        hideSecondPassword = false;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Text(
+            "Create new user",
+            style: TextStyle(
+              fontSize: 30,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextFormField(
+            controller: userNameController,
+            decoration: const InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: "Enter user name",
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextFormField(
+            controller: firstPasswordController,
+            obscureText: hideFirstPassword,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: "Enter password",
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.visibility),
+                onPressed: toggleFirstPasswordVisibility,
+              )
+            ),
+            validator: (value) {
+              if (value != null || value != "") {
+                return "Enter a username";
+              }
+            },
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: TextFormField(
+            controller: secondPasswordController,
+            obscureText: hideSecondPassword,
+            decoration: InputDecoration(
+              border: const OutlineInputBorder(),
+              labelText: "Enter password again",
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.visibility),
+                onPressed: toggleSecondPasswordVisibility,
+              ),
+            ),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            TextButton(
+              onPressed: validateSubmission,
+              child: const Text("Submit", style: TextStyle(fontSize: 18)),
+            )
+          ],
+        ),
+      ],
     );
   }
 }
