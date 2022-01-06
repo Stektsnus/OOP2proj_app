@@ -166,6 +166,9 @@ class _CreateUserViewState extends State<CreateUserView> {
   bool hideFirstPassword = true;
   bool hideSecondPassword = true;
 
+  final formGlobalKey = GlobalKey<FormState>();
+
+
   // Controllers for the form
   TextEditingController userNameController = TextEditingController();
   TextEditingController firstPasswordController = TextEditingController();
@@ -173,9 +176,8 @@ class _CreateUserViewState extends State<CreateUserView> {
 
   void validateSubmission() async {
     // Hämta http-data
+    print("Validatesubmission called");
     var url = Uri.parse(dataBaseUrl + "api/users/signup");
-    // print(userNameController.text);
-    // print(firstPasswordController.text);
     Map data = {
           "username" : userNameController.text,
           "password" : firstPasswordController.text,
@@ -190,23 +192,14 @@ class _CreateUserViewState extends State<CreateUserView> {
       body: body
         
     ).then((res) {
-      print('Response status: ${res.statusCode}');
-      print('Response body: ${res.body}');
+      if (res.statusCode == 200) {
+        print('Response status: ${res.statusCode}');
+        print('Response body: ${res.body}');
+        // Navigate to the real app view here
+      }
+      // Display error message
+
     });
-  }
-
-  bool validatePassword() {
-    String p1 = firstPasswordController.text;
-    String p2 = secondPasswordController.text;
-
-    if (p1 != p2) {
-      return false;
-    } else if (p1.length < 12) {
-      return false;
-    } else if (p1.split("").contains(" ")) {
-      return false;
-    }
-    return true;
   }
 
 
@@ -234,69 +227,104 @@ class _CreateUserViewState extends State<CreateUserView> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        const Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Text(
-            "Create new user",
-            style: TextStyle(
-              fontSize: 30,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: TextFormField(
-            controller: userNameController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: "Enter user name",
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: TextFormField(
-            controller: firstPasswordController,
-            obscureText: hideFirstPassword,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: "Enter password",
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.visibility),
-                onPressed: toggleFirstPasswordVisibility,
-              )
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: TextFormField(
-            controller: secondPasswordController,
-            obscureText: hideSecondPassword,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              labelText: "Enter password again",
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.visibility),
-                onPressed: toggleSecondPasswordVisibility,
+    return Form(
+      key: formGlobalKey,
+      child: Center(
+        child: ListView(
+          // mainAxisAlignment: MainAxisAlignment.center,
+          // crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                "Create new user",
+                style: TextStyle(
+                  fontSize: 30,
+                ),
               ),
             ),
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            TextButton(
-              onPressed: validateSubmission,
-              child: const Text("Submit", style: TextStyle(fontSize: 18)),
-            )
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextFormField(
+                controller: userNameController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: "Enter user name",
+                ),
+                validator: (value) {
+                  print("validator called");
+                  if (value == null || value == "") {
+                    return "Username cannot be empty.";
+                  } else if (value.split("").contains(" ")){
+                    return "Username contains spaces";
+                  }
+                  return null;
+                }
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextFormField(
+                controller: firstPasswordController,
+                obscureText: hideFirstPassword,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: "Enter password",
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.visibility),
+                    onPressed: toggleFirstPasswordVisibility,
+                  )
+                ),
+                validator: (value) {
+                  if (value == null || value.length < 12 || value.split("").contains(" ")){
+                    return "Please enter a valid password";
+                  }
+                  return null;
+                },
+                
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TextFormField(
+                controller: secondPasswordController,
+                obscureText: hideSecondPassword,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  labelText: "Enter password again",
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.visibility),
+                    onPressed: toggleSecondPasswordVisibility,
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.length < 12 || value.split("").contains(" ")){
+                    return "Please enter a valid password";
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    if (formGlobalKey.currentState != null) {
+                      if (formGlobalKey.currentState!.validate()){
+                        validateSubmission();
+                      } else {
+                        formGlobalKey.currentState?.save();
+                      }
+                    }
+                  },
+                  child: const Text("Submit", style: TextStyle(fontSize: 16)),
+                )
+              ],
+            ),
           ],
         ),
-      ],
+      ),
     );
   }
 }
