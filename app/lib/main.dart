@@ -1,8 +1,10 @@
 import "package:flutter/material.dart";
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import "package:http/http.dart" as http;
+import "dart:convert";
 
-int PORT = 3000; 
+String dataBaseUrl = "http://10.0.2.2:3000/";
 
 void main() {
   runApp(const MyApp());
@@ -58,7 +60,7 @@ class _MainViewState extends State<MainView> {
           alignment: Alignment.center,
           child: const Text(
             "Nöd",
-            style: TextStyle(color: Colors.red),
+            style: TextStyle(color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold),
             textAlign: TextAlign.right,
           ),
         ),
@@ -169,12 +171,44 @@ class _CreateUserViewState extends State<CreateUserView> {
   TextEditingController firstPasswordController = TextEditingController();
   TextEditingController secondPasswordController = TextEditingController();
 
-  void validateSubmission() {
-    print(userNameController.text);
-    print(firstPasswordController.text);
-    print(secondPasswordController.text);
+  void validateSubmission() async {
     // Hämta http-data
+    var url = Uri.parse(dataBaseUrl + "api/users/signup");
+    // print(userNameController.text);
+    // print(firstPasswordController.text);
+    Map data = {
+          "username" : userNameController.text,
+          "password" : firstPasswordController.text,
+    };
+    String body = json.encode(data);
+    print(body);
+    var response = await http.post(
+      url,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: body
+        
+    ).then((res) {
+      print('Response status: ${res.statusCode}');
+      print('Response body: ${res.body}');
+    });
   }
+
+  bool validatePassword() {
+    String p1 = firstPasswordController.text;
+    String p2 = secondPasswordController.text;
+
+    if (p1 != p2) {
+      return false;
+    } else if (p1.length < 12) {
+      return false;
+    } else if (p1.split("").contains(" ")) {
+      return false;
+    }
+    return true;
+  }
+
 
   void toggleFirstPasswordVisibility(){
     setState(() {
@@ -236,11 +270,6 @@ class _CreateUserViewState extends State<CreateUserView> {
                 onPressed: toggleFirstPasswordVisibility,
               )
             ),
-            validator: (value) {
-              if (value != null || value != "") {
-                return "Enter a username";
-              }
-            },
           ),
         ),
         Padding(
