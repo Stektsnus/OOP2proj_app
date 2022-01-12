@@ -15,14 +15,14 @@ class _CreateUserViewState extends State<CreateUserView> {
   bool hideFirstPassword = true;
   bool hideSecondPassword = true;
 
-  final formGlobalKey = GlobalKey<FormState>();
+  final _createUserFormGlobalKey = GlobalKey<FormState>();
 
   // Controllers for the form
   TextEditingController userNameController = TextEditingController();
   TextEditingController firstPasswordController = TextEditingController();
   TextEditingController secondPasswordController = TextEditingController();
 
-  void validateSubmission() async {
+  void validateSubmission(BuildContext context) async {
     // Hämta http-data
     print("Validatesubmission called");
     var url = Uri.parse(dataBaseUrl + "api/users/signup");
@@ -31,8 +31,7 @@ class _CreateUserViewState extends State<CreateUserView> {
           "password" : firstPasswordController.text,
     };
     String body = json.encode(data);
-    print(body);
-    var response = await http.post(
+    await http.post(
       url,
       headers: {
         "Content-Type": "application/json",
@@ -47,6 +46,7 @@ class _CreateUserViewState extends State<CreateUserView> {
         // Navigate to the real app view here
       } else {
         showSuccessMessage(context);
+        Navigator.pop(context);
       }
     });
   }
@@ -95,109 +95,114 @@ class _CreateUserViewState extends State<CreateUserView> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: formGlobalKey,
-      child: Center(
-        child: ListView(
-          // mainAxisAlignment: MainAxisAlignment.center,
-          // crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                "Create new user",
-                style: TextStyle(
-                  fontSize: 30,
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextFormField(
-                controller: userNameController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: "Enter user name",
-                ),
-                validator: (value) {
-                  if (value == null || value == "") {
-                    return "Username cannot be empty";
-                  } else if (value.split("").contains(" ")){
-                    return "Username contains spaces";
-                  }
-                  return null;
-                }
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextFormField(
-                controller: firstPasswordController,
-                obscureText: hideFirstPassword,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  labelText: "Enter password",
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.visibility),
-                    onPressed: toggleFirstPasswordVisibility,
-                  )
-                ),
-                validator: (value) {
-                  if (value == null || value.length < 12 || value.split("").contains(" ")){
-                    return "Please enter a valid password";
-                  }
-                  if (value != secondPasswordController.text) {
-                    return "Both passwords must be the same";
-                  }
-                  return null;
-                },
-                
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TextFormField(
-                controller: secondPasswordController,
-                obscureText: hideSecondPassword,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  labelText: "Enter password again",
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.visibility),
-                    onPressed: toggleSecondPasswordVisibility,
+    return Scaffold(
+      body: Form(
+        key: _createUserFormGlobalKey,
+        child: Center(
+          child: ListView(
+            // mainAxisAlignment: MainAxisAlignment.center,
+            // crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 150),
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(
+                  child: Text(
+                    "Create new user",
+                    style: TextStyle(
+                      fontSize: 30,
+                    ),
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.length < 12 || value.split("").contains(" ")){
-                    return "Please enter a valid password";
-                  }
-                  if (value != firstPasswordController.text) {
-                    return "Both passwords must be the same";
-                  }
-                  return null;
-                },
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    if (formGlobalKey.currentState != null) {
-                      if (formGlobalKey.currentState!.validate()){
-                        validateSubmission();
-                      } else {
-                        formGlobalKey.currentState?.save();
-                      }
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextFormField(
+                  controller: userNameController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Enter user name",
+                  ),
+                  validator: (value) {
+                    if (value == null || value == "") {
+                      return "Username cannot be empty";
+                    } else if (value.split("").contains(" ")){
+                      return "Username contains spaces";
                     }
+                    return null;
+                  }
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextFormField(
+                  controller: firstPasswordController,
+                  obscureText: hideFirstPassword,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: "Enter password",
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.visibility),
+                      onPressed: toggleFirstPasswordVisibility,
+                    )
+                  ),
+                  validator: (value) {
+                    if (value == null || value.length < 12 || value.split("").contains(" ")){
+                      return "Please enter a valid password";
+                    }
+                    if (value != secondPasswordController.text) {
+                      return "Both passwords must be the same";
+                    }
+                    return null;
                   },
-                  child: const Text("Submit", style: TextStyle(fontSize: 16)),
-                )
-              ],
-            ),
-          ],
-        ),
+                  
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextFormField(
+                  controller: secondPasswordController,
+                  obscureText: hideSecondPassword,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    labelText: "Enter password again",
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.visibility),
+                      onPressed: toggleSecondPasswordVisibility,
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.length < 12 || value.split("").contains(" ")){
+                      return "Please enter a valid password";
+                    }
+                    if (value != firstPasswordController.text) {
+                      return "Both passwords must be the same";
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_createUserFormGlobalKey.currentState != null) {
+                        if (_createUserFormGlobalKey.currentState!.validate()){
+                          validateSubmission(context);
+                        } else {
+                          _createUserFormGlobalKey.currentState?.save();
+                        }
+                      }
+                    },
+                    child: const Text("Submit", style: TextStyle(fontSize: 16)),
+                  )
+                ],
+              ),
+            ],
+          ),
 
+        ),
       ),
     );
   }
