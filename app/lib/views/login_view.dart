@@ -34,7 +34,9 @@ class _LoginViewState extends State<LoginView> {
       .then((value) {
         print(value);
         if (value == 200) {
-          widget.loginCallback(_userNameController.text);
+          showLoginSuccessMessage(context);
+          Future.delayed(const Duration(milliseconds: 1000), () => widget.loginCallback(_userNameController.text));
+          
         } else {
           showLoginFailureMessage(context);
         }
@@ -71,6 +73,7 @@ class _LoginViewState extends State<LoginView> {
       builder: (context) => const AlertDialog(
             title: Text("Success!"),
             content: Text("Logged in."),
+            elevation: 14.0,
       )
     );
   }
@@ -81,6 +84,7 @@ class _LoginViewState extends State<LoginView> {
       builder: (context) => const AlertDialog(
             title: Text("Sorry"),
             content: Text("Username or password is wrong. Try again."),
+            elevation: 14.0,
       )
     );
   }

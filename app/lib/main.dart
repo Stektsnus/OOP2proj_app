@@ -36,9 +36,14 @@ class MyApp extends StatelessWidget {
 }
 
 class MainView extends StatefulWidget {
-  user_model.User? user = user_model.User();
+  final user_model.User? user = user_model.User();
 
-  MainView({Key? key}) : super(key: key);
+  MainView({Key? key}) : super(key: key) {
+    if (user?.username != null) {
+      user?.isLoggedIn = true;
+    }
+  }
+  
   @override
   _MainViewState createState() => _MainViewState();
 }
@@ -51,6 +56,7 @@ class _MainViewState extends State<MainView> {
     setState(() {
       widget.user?.username = username;
       widget.user?.isLoggedIn = true;
+      print(widget.user?.username);
     });
   }
 
