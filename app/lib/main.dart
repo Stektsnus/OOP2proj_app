@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import "package:http/http.dart" as http;
 import "dart:convert";
 import "package:provider/provider.dart";
+import "package:location/location.dart";
 
 // Local files
 import "views/create_user_view.dart" as create_user_view;
@@ -16,6 +17,7 @@ import "helpers/globals.dart" as globals;
 import "widgets/main_widgets.dart" as main_widgets;
 import "helpers/notifiers.dart" as notifiers;
 import "models/user_model.dart" as user_model;
+import "models/location_model.dart";
 
 String dataBaseUrl = "http://10.0.2.2:3000/";
 
@@ -39,6 +41,8 @@ class MainView extends StatefulWidget {
   final user_model.User? user = user_model.User();
 
   MainView({Key? key}) : super(key: key) {
+    user?.username = "stektsnuskingen2";
+    user?.isLoggedIn = true;
     if (user?.username != null) {
       user?.isLoggedIn = true;
     }
@@ -51,12 +55,11 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> {
   int _selectedIndex = 0;
 
-  void userLoggedIn(String username){
+  void userLoggedIn(String username) async {
     print("Callback function called");
-    setState(() {
+    setState(() async {
       widget.user?.username = username;
       widget.user?.isLoggedIn = true;
-      print(widget.user?.username);
     });
   }
 
@@ -66,12 +69,18 @@ class _MainViewState extends State<MainView> {
       print("Selected index: " + _selectedIndex.toString());
     });
   }
-
-  List<Widget> appViews = [
-    const home_view.HomeView(),
-    const map_view.MapView(),
-    const settings_view.SettingsView()
-  ];
+  Widget getAppView (User? user) {
+    switch (_selectedIndex) {
+      case 0:
+        return const home_view.HomeView();
+      case 1:
+        return map_view.MapView(user : user);
+      case 2:
+        return const settings_view.SettingsView();
+      default:
+        return const Text("Something went wrong");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +97,7 @@ class _MainViewState extends State<MainView> {
             ),
           ),
         ),
-        body: appViews[_selectedIndex],
+        body: getAppView(widget.user),
         bottomNavigationBar: BottomNavigationBar(
             items: const <BottomNavigationBarItem>[
               BottomNavigationBarItem(
