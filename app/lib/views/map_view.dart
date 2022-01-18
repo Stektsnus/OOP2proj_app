@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import "../widgets/main_widgets.dart" as main_widgets;
 import "package:flutter_map/flutter_map.dart";
@@ -24,16 +26,42 @@ class MapView extends StatefulWidget {
 class _MapViewState extends State<MapView> {
   Future? hasAcceptedLocation;
   Location location = Location();
+  LocationData? currentLocation;
+  Stream<LocationData> locationStream = Location().onLocationChanged;
+  StreamSubscription<LocationData>? locationStreamSubscription;
 
   @override
   initState() {
     super.initState();
+
     hasAcceptedLocation = askForLocationPermission().then((value) async {
       if (value) {
         hasAcceptedLocation = value;
       }
     });
+    locationStreamSubscription =
+        location.onLocationChanged.handleError((dynamic err) {    // not entierly sure how this works
+      if (err) {
+        setState(() {});
+      }
+      locationStreamSubscription?.cancel();
+      setState(() {
+        locationStreamSubscription = null;
+      });
+    }).listen((LocationData newLocation) {
+      setState(() {
+        currentLocation = newLocation;
+      });
+    });
+    setState(() {});
+    location.getLocation().then((loc) {
+      currentLocation = loc;
+    });
   }
+
+  // void updateCurrentLocation(LocationData newLocation) {
+  //   print("listener called");
+  // }
 
   Future askForLocationPermission() async {
     return await LocationModel.requestLocation();
@@ -46,58 +74,49 @@ class _MapViewState extends State<MapView> {
       builder: (context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.none:
-            case ConnectionState.active:
-            case ConnectionState.waiting:
-              return Center(child: CircularProgressIndicator());
+          case ConnectionState.active:
+          case ConnectionState.waiting:
+            return const Center(child: CircularProgressIndicator());
           case ConnectionState.done:
-            return FutureBuilder<LocationData>(
-              future: location.getLocation(),
-              builder: (context, snapshot) {
-                switch (snapshot.connectionState) {
-                  case ConnectionState.none:
-                  case ConnectionState.active:
-                  case ConnectionState.waiting:
-                    return Center(child: CircularProgressIndicator());
-                  case ConnectionState.done:
-                    if (snapshot.hasData) {
-                      return FlutterMap(
-                        options: MapOptions(
-                          center: LatLng(snapshot.data!.latitude!.toDouble(), snapshot.data!.longitude!.toDouble()),
-                          zoom: 13.0,
+            if (currentLocation != null) {
+              return FlutterMap(
+                options: MapOptions(
+                  center: LatLng(currentLocation!.latitude!.toDouble(),
+                      currentLocation!.longitude!.toDouble()),
+                  zoom: 13.0,
+                ),
+                layers: [
+                  TileLayerOptions(
+                    urlTemplate:
+                        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                    subdomains: ['a', 'b', 'c'],
+                    attributionBuilder: (_) {
+                      return Text("© OpenStreetMap contributors");
+                    },
+                  ),
+                  MarkerLayerOptions(
+                    markers: [
+                      Marker(
+                        width: 80.0,
+                        height: 80.0,
+                        point: LatLng(currentLocation!.latitude!.toDouble(),
+                            currentLocation!.longitude!.toDouble()),
+                        builder: (ctx) => Container(
+                          child: Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            semanticLabel: "You",
+                          ),
                         ),
-                        layers: [
-                          TileLayerOptions(
-                            urlTemplate:
-                                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                            subdomains: ['a', 'b', 'c'],
-                            attributionBuilder: (_) {
-                              return Text("© OpenStreetMap contributors");
-                            },
-                          ),
-                          MarkerLayerOptions(
-                            markers: [
-                              Marker(
-                                width: 80.0,
-                                height: 80.0,
-                                point: LatLng(snapshot.data!.latitude!.toDouble(), snapshot.data!.longitude!.toDouble()),
-                                builder: (ctx) => Container(
-                                  child: Icon(
-                                    Icons.location_on,
-                                    color: Colors.red,
-                                    semanticLabel: "You",
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      );
-                    }
-                    return Text("Default");
-                  default:
-                    return Text("Default");
-              }
-            });
+                      ),
+                    ],
+                  ),
+                ],
+              );
+              
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
           default:
             return Text("Default");
         }
