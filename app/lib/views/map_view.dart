@@ -124,37 +124,3 @@ class _MapViewState extends State<MapView> {
     );
   }
 }
-
-
-// return FlutterMap(
-//                         options: MapOptions(
-//                           center: LatLng(snapshot.data.latitude, snapshot.data.longitude),
-//                           zoom: 13.0,
-//                         ),
-//                         layers: [
-//                           TileLayerOptions(
-//                             urlTemplate:
-//                                 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-//                             subdomains: ['a', 'b', 'c'],
-//                             attributionBuilder: (_) {
-//                               return Text("© OpenStreetMap contributors");
-//                             },
-//                           ),
-//                           MarkerLayerOptions(
-//                             markers: [
-//                               Marker(
-//                                 width: 80.0,
-//                                 height: 80.0,
-//                                 point: LatLng(58.4027, 15.6100),
-//                                 builder: (ctx) => Container(
-//                                   child: Icon(
-//                                     Icons.location_on,
-//                                     color: Colors.red,
-//                                     semanticLabel: "You",
-//                                   ),
-//                                 ),
-//                               ),
-//                             ],
-//                           ),
-//                         ],
-//                       );

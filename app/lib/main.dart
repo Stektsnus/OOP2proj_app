@@ -41,8 +41,8 @@ class MainView extends StatefulWidget {
   final user_model.User? user = user_model.User();
 
   MainView({Key? key}) : super(key: key) {
-    user?.username = "stektsnuskingen2";
-    user?.isLoggedIn = true;
+    // user?.username = "stektsnuskingen2";
+    // user?.isLoggedIn = true;
     if (user?.username != null) {
       user?.isLoggedIn = true;
     }
@@ -55,9 +55,9 @@ class MainView extends StatefulWidget {
 class _MainViewState extends State<MainView> {
   int _selectedIndex = 0;
 
-  void userLoggedIn(String username) async {
+  void userLoggedIn(String username) {
     print("Callback function called");
-    setState(() async {
+    setState(() {
       widget.user?.username = username;
       widget.user?.isLoggedIn = true;
     });
@@ -69,16 +69,50 @@ class _MainViewState extends State<MainView> {
       print("Selected index: " + _selectedIndex.toString());
     });
   }
-  Widget getAppView (User? user) {
+
+  Widget getAppView(User? user) {
     switch (_selectedIndex) {
       case 0:
         return const home_view.HomeView();
       case 1:
-        return map_view.MapView(user : user);
+        return map_view.MapView(user: user);
       case 2:
         return const settings_view.SettingsView();
       default:
         return const Text("Something went wrong");
+    }
+  }
+
+  Widget getViewTitle() {
+    switch (_selectedIndex) {
+      case 0:
+        return const Text(
+              "Home",
+              style: TextStyle(
+                  color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.right,
+            );
+      case 1:
+        return const Text(
+              "Map",
+              style: TextStyle(
+                  color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.right,
+            );
+      case 2:
+        return const Text(
+              "Settings",
+              style: TextStyle(
+                  color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.right,
+            );
+      default:
+        return const Text(
+              "Something went wrong",
+              style: TextStyle(
+                  color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.right,
+            );
     }
   }
 
@@ -89,12 +123,7 @@ class _MainViewState extends State<MainView> {
         appBar: AppBar(
           title: Container(
             alignment: Alignment.center,
-            child: const Text(
-              "Home",
-              style: TextStyle(
-                  color: Colors.red, fontSize: 24, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.right,
-            ),
+            child: getViewTitle(),
           ),
         ),
         body: getAppView(widget.user),
